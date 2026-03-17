@@ -1,4 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -15,18 +16,15 @@ class InventoryModel(db.Model):
     Purchase_Date = db.Column(db.DateTime)
     Expiry_Date = db.Column(db.DateTime)
 
-    # def __repr__(self):
-    #     return f'<InventoryModel {self.Item}>'
-
-    # def to_dict(self):
-    #     return {
-    #         'id': self.id,
-    #         'item': self.Item,
-    #         'category': self.Category,
-    #         'quantity': self.Quantity,
-    #         'units': self.Units_of_Measurement,
-    #         'cost': self.Unit_Cost,
-    #         'supplier': self.Supplier,
-    #         'purchaseDate': self.Purchase_Date,
-    #         'expiryDate': self.Expiry_Date
-    #     }
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'item': self.Item,
+            'category': self.Category,
+            'quantity': self.Quantity,
+            'units': self.Units_of_Measurement,
+            'unit_cost': self.Unit_Cost,
+            'supplier': self.Supplier,
+            'purchase_date': self.Purchase_Date.strftime('%Y-%m-%d') if self.Purchase_Date else None,
+            'expiry_date': self.Expiry_Date.strftime('%Y-%m-%d') if self.Expiry_Date else None
+        }
