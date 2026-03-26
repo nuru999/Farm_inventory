@@ -4,9 +4,12 @@ from flask_migrate import Migrate
 from datetime import datetime
 from models import db, InventoryModel
 
+# =======================
+# APP INITIALIZATION
+# =======================
 app = Flask(__name__)
 
-# CONFIG
+# CONFIG (Must be before db.init_app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///example.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -30,23 +33,31 @@ def serialize_item(inv):
     }
 
 # =======================
-# HOME PAGE
+# FRONTEND ROUTES (Pages)
 # =======================
 @app.route('/')
-def home():
-    return render_template('index.html')
+def dashboard():
+    return render_template('dashboard.html')
+
+@app.route('/inventory')
+def inventory():
+    return render_template('inventory.html')
+
+@app.route('/settings')
+def settings():
+    return render_template('settings.html')
 
 # =======================
-# GET ALL INVENTORY
+# API ROUTES (Data)
 # =======================
+
+# Get all inventory
 @app.route('/api/inventory', methods=['GET'])
 def api_get_inventory():
     inventories = InventoryModel.query.all()
     return jsonify([serialize_item(inv) for inv in inventories])
 
-# =======================
-# ADD INVENTORY
-# =======================
+# Add new inventory item
 @app.route('/api/inventory', methods=['POST'])
 def api_add_inventory():
     data = request.get_json()
@@ -80,30 +91,7 @@ def api_add_inventory():
             "message": str(e)
         }), 400
 
-# =======================
-# DELETE INVENTORY
-# =======================
-@app.route('/api/inventory/<int:id>', methods=['DELETE'])
-def delete_item(id):
-    item = InventoryModel.query.get(id)
-
-    if not item:
-        return jsonify({
-            "status": "error",
-            "message": "Item not found"
-        }), 404
-
-    db.session.delete(item)
-    db.session.commit()
-
-    return jsonify({
-        "status": "success",
-        "message": "Item deleted successfully"
-    })
-
-# =======================
-# UPDATE INVENTORY
-# =======================
+# Update inventory item
 @app.route('/api/inventory/<int:id>', methods=['PUT'])
 def update_item(id):
     item = InventoryModel.query.get(id)
@@ -143,11 +131,29 @@ def update_item(id):
             "message": str(e)
         }), 400
 
+# Delete inventory item
+@app.route('/api/inventory/<int:id>', methods=['DELETE'])
+def delete_item(id):
+    item = InventoryModel.query.get(id)
+
+    if not item:
+        return jsonify({
+            "status": "error",
+            "message": "Item not found"
+        }), 404
+
+    db.session.delete(item)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": "Item deleted successfully"
+    })
+
 # =======================
 # RUN APP
 # =======================
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-
-    app.run(debug=True)
+    app.run(debug=True, host='127.0.0.1', port=5000)
